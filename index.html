@@ -99,12 +99,24 @@
       color: #fff;
     }
 
-    /* Adjusted Avatar Sizes */
+    /* Adjusted Avatar Sizes and Positioning */
     .avatar {
       width: 30px;
       height: 30px;
       border-radius: 50%;
       margin: 0 5px;
+    }
+
+    /* Bot avatar more to the left */
+    .message.bot .avatar {
+      margin-left: 5px;
+      margin-right: 10px;
+    }
+
+    /* User avatar more to the right */
+    .message.user .avatar {
+      margin-left: 10px;
+      margin-right: 5px;
     }
 
     /* Code Block Styling with Big Copy Button */
@@ -116,6 +128,7 @@
       background-color: #f9f9f9;
       padding: 10px;
       overflow-x: auto;
+      position: relative;
     }
 
     .code-block pre {
@@ -124,6 +137,15 @@
       word-wrap: break-word;
       font-family: Consolas, "Courier New", monospace;
       font-size: 0.95em;
+    }
+
+    .code-block .language-name {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: #666;
+      font-size: 0.8em;
+      font-family: Arial, sans-serif;
     }
 
     .copy-button {
@@ -264,12 +286,20 @@
     const userInput = document.getElementById("user-input");
 
     const chatGPTLogo = "https://i.ibb.co/p6Qz6XV6/file-VMVLZgy-Rq7z9-Le8-Bgm-S8ei.jpg";
-    const userLogo = "https://i.ibb.co/ssQNvBC/67373290.jpg";
+    const userLogo = "https://i.ibb.co/JjwZvMqX/IMG-20241118-112140-894.jpg";
 
-    // Function to copy code from a code block
+    // Function to copy code from a code block without including a formatting header
     function copyCode(button) {
-      const code = button.parentElement.querySelector("pre code").innerText;
-      navigator.clipboard.writeText(code).then(() => {
+      const codeBlock = button.closest('.code-block');
+      let codeText = codeBlock.querySelector("pre code").innerText;
+      
+      // Remove language name if it's the first line and matches a common pattern
+      const lines = codeText.split('\n');
+      if (lines.length > 1 && /^[a-zA-Z]+$/.test(lines[0].trim())) {
+        codeText = lines.slice(1).join('\n').trim();
+      }
+      
+      navigator.clipboard.writeText(codeText).then(() => {
         button.innerText = "Copied!";
         setTimeout(() => {
           button.innerText = "📋 Copy Code";
@@ -286,12 +316,18 @@
       }
     });
 
-    // Function to parse markdown and include a code block with an inline copy button at the bottom
+    // Function to parse markdown and include a code block with a big copy button at the bottom
     function parseMarkdown(text) {
       // Replace code blocks with a container including a big copy button at the end
-      text = text.replace(/```([\s\S]*?)```/g, function(match, p1) {
-        return '<div class="code-block"><pre><code>' + p1 + '</code></pre><button class="copy-button">📋 Copy Code</button></div>';
+      text = text.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, language, code) {
+        const languageName = language ? language : 'code';
+        return `<div class="code-block">
+                  <span class="language-name">${languageName}</span>
+                  <pre><code>${code.trim()}</code></pre>
+                  <button class="copy-button">📋 Copy Code</button>
+                </div>`;
       });
+      
       // Inline code
       text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
       // Bold text
@@ -326,6 +362,7 @@
         bubble.innerHTML = parseMarkdown(message);
       }
 
+      // Append elements with adjusted positioning
       if (fromUser) {
         messageWrapper.appendChild(bubble);
         messageWrapper.appendChild(avatar);
@@ -337,7 +374,7 @@
       return messageWrapper;
     }
 
-    // Function to fetch response from API
+        // Function to fetch response from API
     async function fetchResponse(userMessage) {
       try {
         const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
