@@ -101,7 +101,7 @@ function createMessageElement(message, fromUser, isLoading = false) {
 async function fetchResponse(userMessage) {
   try {
     // Updated endpoint: note that the parameter name is now "text"
-    const apiUrl = `https://deepseek-coder.apis-bj-devs.workers.dev/?text=${encodeURIComponent(userMessage)}`;
+    const apiUrl = `https://deepseek-coder.apis-bj-devs.workers.dev/?question=${encodeURIComponent(userMessage)}`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
